@@ -16,3 +16,17 @@ type Vocab struct {
 
 // Definition maps a language to a meaning e.g. {"en": "hello"}
 type Definition map[string]string
+
+// KnownPhrases takes a text string and a VocabList and returns a slice
+// containing the phrases in the VocabList that appear in the text.
+func KnownPhrases(t string, vl VocabList) ([]string, error) {
+	known := []string{}
+	for _, c := range t {
+		for _, v := range vl {
+			if string(c) == v.Writing {
+				known = append(known, v.Writing)
+			}
+		}
+	}
+	return known, nil
+}
