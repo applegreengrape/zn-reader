@@ -1,5 +1,8 @@
 package znr
 
+// VocabList defines a list of Vocab items.
+type VocabList []Vocab
+
 // Vocab defines a single character, word, or phrase in Chinese.
 type Vocab struct {
 	Lang             string     `json:"lang,omitempty"`
