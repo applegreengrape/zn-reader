@@ -15,12 +15,14 @@ func TestKnownPhrases(t *testing.T) {
 		znr.Vocab{Writing: "是"},
 		znr.Vocab{Writing: "好"},
 		znr.Vocab{Writing: "友"},
+		znr.Vocab{Writing: "你好"},
 	}
 	cases := []struct {
 		in  string
 		out string
 	}{
-		{in: "你好世界", out: "你,好"},
+		{in: "你好世界", out: "你好"},
+		{in: "你好世界，你今天怎么样？", out: "你好,你"},
 		{in: "你是谁？", out: "你,是"},
 		{in: "我是你的好朋友", out: "是,你,好,友"},
 	}
@@ -32,7 +34,7 @@ func TestKnownPhrases(t *testing.T) {
 		}
 
 		if reflect.DeepEqual(known, strings.Split(c.out, ",")) == false {
-			t.Errorf("%v != %v", known, c.out)
+			t.Errorf("%v != %v", strings.Join(known, ","), c.out)
 		}
 	}
 }
