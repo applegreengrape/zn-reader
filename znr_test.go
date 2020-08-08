@@ -17,23 +17,30 @@ func TestKnownPhrases(t *testing.T) {
 		znr.Vocab{Writing: "友"},
 		znr.Vocab{Writing: "你好"},
 	}
+
+	tr := znr.NewTrie()
+	for _, v := range vl {
+		tr.Insert(v.Writing)
+	}
+
 	cases := []struct {
-		in  string
-		out string
+		txt string
+		tr  znr.Trie
+		out []string
 	}{
-		{in: "你好世界", out: "你好"},
-		{in: "你好世界，你今天怎么样？", out: "你好,你"},
-		{in: "你是谁？", out: "你,是"},
-		{in: "我是你的好朋友", out: "是,你,好,友"},
+		{txt: "你好世界", tr: tr, out: []string{"你好"}},
+		{txt: "你好世界，你今天怎么样？", tr: tr, out: []string{"你好", "你"}},
+		{txt: "你是谁？", tr: tr, out: []string{"你", "是"}},
+		{txt: "我是你的好朋友", tr: tr, out: []string{"是", "你", "好", "友"}},
 	}
 
 	for _, c := range cases {
-		known, err := znr.KnownPhrases(c.in, vl)
+		known, err := tr.KnownPhrases(c.txt)
 		if err != nil {
 			t.Error(err)
 		}
 
-		if reflect.DeepEqual(known, strings.Split(c.out, ",")) == false {
+		if reflect.DeepEqual(known, c.out) == false {
 			t.Errorf("%v != %v", strings.Join(known, ","), c.out)
 		}
 	}
@@ -45,15 +52,49 @@ func BenchmarkKnownPhrases(b *testing.B) {
 		znr.Vocab{Writing: "是"},
 		znr.Vocab{Writing: "好"},
 		znr.Vocab{Writing: "友"},
+		znr.Vocab{Writing: "你好"},
+	}
+
+	tr := znr.NewTrie()
+	for _, v := range vl {
+		tr.Insert(v.Writing)
 	}
 
 	for t := 8; t < 12; t++ {
 		l := 1 << t
 		b.Run(fmt.Sprintf("%03d", l), func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
-				_, _ = znr.KnownPhrases(txt[0:l], vl)
+				_, _ = tr.KnownPhrases(txt[0:l])
 			}
 		})
+	}
+}
+
+func TestTrieInsert(t *testing.T) {
+	cases := []struct {
+		txt string
+		f   bool
+	}{
+		{txt: "北京", f: true},
+		{txt: "中国", f: true},
+		{txt: "北", f: true},
+		{txt: "安静", f: false},
+		{txt: "", f: false},
+	}
+
+	tr := znr.NewTrie()
+
+	for _, c := range cases {
+		if c.f == false {
+			continue
+		}
+		tr.Insert(c.txt)
+	}
+
+	for _, c := range cases {
+		if f := tr.Find(c.txt); f != c.f {
+			t.Errorf("%s found: %t expected %t", c.txt, f, c.f)
+		}
 	}
 }
 
